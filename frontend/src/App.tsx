@@ -3,6 +3,7 @@ import {
   AuthError,
   DeploymentSnapshot,
   LogEvent,
+  fetchSettings,
   fetchSnapshot,
   logout,
   startDeploy,
@@ -26,6 +27,25 @@ const EMPTY: DeploymentSnapshot = {
 
 const STEPS = ["STOPPING", "STARTING", "RUNNING"] as const;
 
+function previewPath(raw: string) {
+  const value = raw.trim();
+  if (!value || value === "/") {
+    return "";
+  }
+  if (value.startsWith("/")) {
+    return value.endsWith("/") && value.length > 1 ? value.slice(0, -1) : value;
+  }
+  if (value.includes("://") || value.includes(":") || value.includes(".")) {
+    try {
+      const parsed = new URL(value.includes("://") ? value : `http://${value}`);
+      return parsed.pathname === "/" ? "" : parsed.pathname.replace(/\/$/, "");
+    } catch {
+      return "";
+    }
+  }
+  return `/${value}`;
+}
+
 function statusLabel(status: DeploymentSnapshot["status"]) {
   switch (status) {
     case "IDLE":
@@ -44,7 +64,12 @@ function statusLabel(status: DeploymentSnapshot["status"]) {
 export default function App() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [url, setUrl] = useState("http://localhost:9090");
+  const [url, setUrl] = useState("/testurl");
+  const [settings, setSettings] = useState({
+    appPort: 9090,
+    host: window.location.hostname,
+    scheme: window.location.protocol.replace(":", "") || "http",
+  });
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +78,7 @@ export default function App() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const deploying = snapshot.status === "STOPPING" || snapshot.status === "STARTING" || busy;
+  const publicPreview = `${settings.scheme}://${settings.host}:${settings.appPort}${previewPath(url)}`;
 
   useEffect(() => {
     fetchSnapshot()
@@ -69,6 +95,9 @@ export default function App() {
     if (!authed) {
       return;
     }
+    fetchSettings()
+      .then(setSettings)
+      .catch(() => undefined);
     const source = new EventSource("/api/deploy/stream");
     source.onmessage = (event) => {
       const payload = JSON.parse(event.data) as LogEvent;
@@ -232,15 +261,15 @@ export default function App() {
           </section>
 
           <label className="field">
-            <span>URL приложения</span>
+            <span>Путь приложения</span>
             <input
               value={url}
               onChange={(event) => setUrl(event.target.value)}
-              placeholder="http://localhost:9090"
+              placeholder="/testurl"
               autoComplete="off"
               spellCheck={false}
             />
-            <em>Порт из URL станет server.port. Панель занимает 8080.</em>
+            <em>Ссылка после деплоя: {publicPreview}</em>
           </label>
 
           <ol className="steps">

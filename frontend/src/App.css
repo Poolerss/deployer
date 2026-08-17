@@ -250,6 +250,7 @@ h1 {
   color: var(--muted);
   font-style: normal;
   font-size: 12px;
+  word-break: break-all;
 }
 
 .steps {

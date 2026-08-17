@@ -81,6 +81,18 @@ export async function fetchMetrics(): Promise<ServerMetrics> {
   return response.json();
 }
 
+export type PanelSettings = {
+  appPort: number;
+  host: string;
+  scheme: string;
+};
+
+export async function fetchSettings(): Promise<PanelSettings> {
+  const response = await fetch("/api/deploy/settings", { credentials: "include" });
+  await ensureOk(response, "Не удалось получить настройки");
+  return response.json();
+}
+
 export async function startDeploy(file: File, url: string): Promise<DeploymentSnapshot> {
   const body = new FormData();
   body.append("jar", file);

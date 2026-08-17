@@ -8,30 +8,44 @@ import org.junit.jupiter.api.Test;
 class DeployTargetTest {
 
 	@Test
-	void parsesHostPortAndPath() {
-		DeployTarget target = DeployTarget.parse("http://localhost:9090/shop", 8080);
+	void buildsPublicUrlFromPathOnly() {
+		DeployTarget target = DeployTarget.parse("/testurl", "93.177.116.80", "http", 9090, 18080);
 		assertEquals(9090, target.port());
-		assertEquals("/shop", target.contextPath());
-		assertEquals("http://localhost:9090/shop", target.publicUrl());
+		assertEquals("/testurl", target.contextPath());
+		assertEquals("http://93.177.116.80:9090/testurl", target.publicUrl());
 	}
 
 	@Test
-	void acceptsUrlWithoutScheme() {
-		DeployTarget target = DeployTarget.parse("127.0.0.1:9091", 8080);
-		assertEquals(9091, target.port());
+	void treatsBareNameAsPath() {
+		DeployTarget target = DeployTarget.parse("shop", "example.com", "http", 9090, 8080);
+		assertEquals("/shop", target.contextPath());
+		assertEquals("http://example.com:9090/shop", target.publicUrl());
+	}
+
+	@Test
+	void replacesLocalhostWithServerHost() {
+		DeployTarget target = DeployTarget.parse("http://localhost:9090/shop", "93.177.116.80", "http", 9090, 18080);
+		assertEquals("/shop", target.contextPath());
+		assertEquals("http://93.177.116.80:9090/shop", target.publicUrl());
+	}
+
+	@Test
+	void rootPathStaysEmpty() {
+		DeployTarget target = DeployTarget.parse("/", "93.177.116.80", "http", 9090, 18080);
 		assertEquals("", target.contextPath());
+		assertEquals("http://93.177.116.80:9090", target.publicUrl());
 	}
 
 	@Test
 	void rejectsPanelPort() {
 		IllegalArgumentException error = assertThrows(
 				IllegalArgumentException.class,
-				() -> DeployTarget.parse("http://localhost:8080", 8080));
-		assertEquals("Порт 8080 занят панелью деплоя. Выберите другой порт", error.getMessage());
+				() -> DeployTarget.parse("/app", "localhost", "http", 8080, 8080));
+		assertEquals("Порт 8080 занят панелью деплоя. Задайте другой deployer.app-port", error.getMessage());
 	}
 
 	@Test
-	void requiresExplicitPort() {
-		assertThrows(IllegalArgumentException.class, () -> DeployTarget.parse("http://localhost/app", 8080));
+	void rejectsDotDotPath() {
+		assertThrows(IllegalArgumentException.class, () -> DeployTarget.parse("/../secret", "h", "http", 9090, 8080));
 	}
 }

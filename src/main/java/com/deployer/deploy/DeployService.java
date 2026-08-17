@@ -40,7 +40,7 @@ public class DeployService {
 		return snapshot.get();
 	}
 
-	public DeploymentSnapshot deploy(MultipartFile jar, String url) {
+	public DeploymentSnapshot deploy(MultipartFile jar, String url, String publicHost, String scheme) {
 		if (jar == null || jar.isEmpty()) {
 			throw new IllegalArgumentException("Выберите JAR-файл");
 		}
@@ -49,7 +49,12 @@ public class DeployService {
 			throw new IllegalArgumentException("Нужен файл с расширением .jar");
 		}
 
-		DeployTarget target = DeployTarget.parse(url, properties.panelPort());
+		DeployTarget target = DeployTarget.parse(
+				url,
+				publicHost,
+				scheme,
+				properties.appPort(),
+				properties.panelPort());
 		if (!lock.tryLock()) {
 			throw new DeployBusyException();
 		}

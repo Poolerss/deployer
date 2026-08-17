@@ -1,5 +1,7 @@
 package com.deployer.deploy;
 
+import com.deployer.config.DeployerProperties;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,10 +22,12 @@ public class DeployController {
 
 	private final DeployService deployService;
 	private final LogHub logHub;
+	private final DeployerProperties properties;
 
-	public DeployController(DeployService deployService, LogHub logHub) {
+	public DeployController(DeployService deployService, LogHub logHub, DeployerProperties properties) {
 		this.deployService = deployService;
 		this.logHub = logHub;
+		this.properties = properties;
 	}
 
 	@GetMapping
@@ -36,12 +40,27 @@ public class DeployController {
 		return logHub.subscribe();
 	}
 
+	@GetMapping("/settings")
+	public PanelSettings settings(HttpServletRequest request) {
+		return new PanelSettings(
+				properties.appPort(),
+				RequestOrigin.host(request, properties.publicHost()),
+				RequestOrigin.scheme(request)
+		);
+	}
+
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<DeploymentSnapshot> deploy(
 			@RequestParam("jar") MultipartFile jar,
-			@RequestParam("url") String url
+			@RequestParam("url") String url,
+			HttpServletRequest request
 	) {
-		return ResponseEntity.accepted().body(deployService.deploy(jar, url));
+		return ResponseEntity.accepted().body(deployService.deploy(
+				jar,
+				url,
+				RequestOrigin.host(request, properties.publicHost()),
+				RequestOrigin.scheme(request)
+		));
 	}
 
 	@DeleteMapping

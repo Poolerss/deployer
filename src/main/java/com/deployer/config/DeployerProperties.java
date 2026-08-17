@@ -9,6 +9,8 @@ public record DeployerProperties(
 		Path workDir,
 		Duration startupTimeout,
 		int panelPort,
+		int appPort,
+		String publicHost,
 		Auth auth
 ) {
 	public record Auth(String username, String password) {
@@ -31,6 +33,12 @@ public record DeployerProperties(
 		}
 		if (panelPort <= 0) {
 			panelPort = 8080;
+		}
+		if (appPort <= 0) {
+			appPort = 9090;
+		}
+		if (publicHost != null && publicHost.isBlank()) {
+			publicHost = null;
 		}
 		if (auth == null) {
 			auth = new Auth("poolerss", "pool1987");

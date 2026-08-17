@@ -3,56 +3,72 @@ package com.deployer.deploy;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
-public record DeployTarget(URI uri, int port, String contextPath) {
+public record DeployTarget(String publicUrl, int port, String contextPath) {
 
-	public static DeployTarget parse(String raw, int panelPort) {
-		if (raw == null || raw.isBlank()) {
-			throw new IllegalArgumentException("Укажите URL приложения");
-		}
+	private static final Pattern PATH_CHARS = Pattern.compile("^[a-zA-Z0-9/_\\-]*$");
 
-		String value = raw.trim();
-		if (!value.contains("://")) {
-			value = "http://" + value;
+	public static DeployTarget parse(String raw, String publicHost, String scheme, int appPort, int panelPort) {
+		if (publicHost == null || publicHost.isBlank()) {
+			throw new IllegalArgumentException("Не удалось определить хост сервера");
 		}
-
-		URI uri;
-		try {
-			uri = URI.create(value);
-		} catch (IllegalArgumentException ex) {
-			throw new IllegalArgumentException("Некорректный URL: " + raw);
+		if (appPort <= 0) {
+			throw new IllegalArgumentException("Некорректный порт приложения");
 		}
-
-		if (uri.getHost() == null || uri.getHost().isBlank()) {
-			throw new IllegalArgumentException("В URL должен быть хост, например http://localhost:9090");
-		}
-		if (uri.getPort() < 0) {
-			throw new IllegalArgumentException("Укажите порт в URL, например http://localhost:9090");
-		}
-		if (uri.getPort() == panelPort) {
+		if (appPort == panelPort) {
 			throw new IllegalArgumentException(
-					"Порт " + panelPort + " занят панелью деплоя. Выберите другой порт");
+					"Порт " + panelPort + " занят панелью деплоя. Задайте другой deployer.app-port");
 		}
 
-		String scheme = uri.getScheme() == null ? "http" : uri.getScheme().toLowerCase(Locale.ROOT);
-		if (!scheme.equals("http") && !scheme.equals("https")) {
-			throw new IllegalArgumentException("Поддерживаются только http и https");
+		String path = extractPath(raw);
+		String normalizedScheme = scheme == null || scheme.isBlank() ? "http" : scheme.toLowerCase(Locale.ROOT);
+		if (!normalizedScheme.equals("http") && !normalizedScheme.equals("https")) {
+			normalizedScheme = "http";
 		}
-
-		String path = Optional.ofNullable(uri.getRawPath()).orElse("");
-		if (path.isBlank() || "/".equals(path)) {
-			path = "";
-		} else if (path.endsWith("/")) {
-			path = path.substring(0, path.length() - 1);
-		}
-		if (!path.isEmpty() && !path.startsWith("/")) {
-			path = "/" + path;
-		}
-
-		return new DeployTarget(uri, uri.getPort(), path);
+		String url = normalizedScheme + "://" + publicHost + ":" + appPort + path;
+		return new DeployTarget(url, appPort, path);
 	}
 
-	public String publicUrl() {
-		return uri.toString();
+	static String extractPath(String raw) {
+		if (raw == null || raw.isBlank() || "/".equals(raw.trim())) {
+			return "";
+		}
+		String value = raw.trim();
+		String path;
+		if (value.startsWith("/")) {
+			path = value;
+		} else if (value.contains("://") || looksLikeHost(value)) {
+			if (!value.contains("://")) {
+				value = "http://" + value;
+			}
+			URI uri;
+			try {
+				uri = URI.create(value);
+			} catch (IllegalArgumentException ex) {
+				throw new IllegalArgumentException("Некорректный путь: " + raw);
+			}
+			path = Optional.ofNullable(uri.getRawPath()).orElse("");
+		} else {
+			path = "/" + value;
+		}
+
+		if (path.isBlank() || "/".equals(path)) {
+			return "";
+		}
+		if (path.endsWith("/") && path.length() > 1) {
+			path = path.substring(0, path.length() - 1);
+		}
+		if (!path.startsWith("/")) {
+			path = "/" + path;
+		}
+		if (path.contains("..") || !PATH_CHARS.matcher(path).matches()) {
+			throw new IllegalArgumentException("Путь может содержать только буквы, цифры, / и -");
+		}
+		return path;
+	}
+
+	private static boolean looksLikeHost(String value) {
+		return value.contains(":") || value.contains(".");
 	}
 }
