@@ -41,13 +41,38 @@ jobs:
           USER: ${{ secrets.VPS_USER }}
           KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
+          set -euo pipefail
           if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$KEY" ]; then
             echo "Add repository secrets VPS_HOST, VPS_USER and VPS_SSH_KEY"
             exit 1
           fi
           mkdir -p ~/.ssh
-          printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+          chmod 700 ~/.ssh
+          python3 <<'PY'
+          import os, re, textwrap
+          from pathlib import Path
+
+          raw = os.environ["KEY"].replace("\r\n", "\n").replace("\r", "\n").strip().strip("\"'")
+          raw = raw.replace("\\n", "\n")
+          match = re.search(r"-----BEGIN ([^-]+)-----", raw)
+          if not match:
+              raise SystemExit("VPS_SSH_KEY is not a private key. Paste the output of cat /root/github-deployer, not the .pub file.")
+          label = match.group(1).strip()
+          body = re.sub(r"-----BEGIN [^-]+-----", "", raw)
+          body = re.sub(r"-----END [^-]+-----", "", body)
+          body = re.sub(r"\s+", "", body)
+          if len(body) < 80:
+              raise SystemExit("VPS_SSH_KEY looks truncated.")
+          pem = (
+              f"-----BEGIN {label}-----\n"
+              + "\n".join(textwrap.wrap(body, 70))
+              + f"\n-----END {label}-----\n"
+          )
+          path = Path.home() / ".ssh" / "deploy_key"
+          path.write_text(pem)
+          path.chmod(0o600)
+          PY
+          ssh-keygen -y -f ~/.ssh/deploy_key >/dev/null
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
-          scp -o StrictHostKeyChecking=yes deployer-1.0.0.jar "$USER@$HOST:/tmp/deployer.jar"
-          ssh -o StrictHostKeyChecking=yes "$USER@$HOST" 'sudo mv /tmp/deployer.jar /opt/deployer/deployer.jar && sudo chown deployer:deployer /opt/deployer/deployer.jar && sudo systemctl restart deployer'
+          scp -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes deployer-1.0.0.jar "$USER@$HOST:/tmp/deployer.jar"
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$USER@$HOST" 'sudo mv /tmp/deployer.jar /opt/deployer/deployer.jar && sudo chown deployer:deployer /opt/deployer/deployer.jar && sudo systemctl restart deployer'
