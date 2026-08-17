@@ -9,6 +9,7 @@ import {
   stopDeploy,
 } from "./api";
 import Login from "./Login";
+import LogFrame from "./LogFrame";
 import MetricsBar from "./MetricsBar";
 import "./App.css";
 
@@ -24,14 +25,6 @@ const EMPTY: DeploymentSnapshot = {
 };
 
 const STEPS = ["STOPPING", "STARTING", "RUNNING"] as const;
-
-function formatTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value.slice(11, 19) || value;
-  }
-  return date.toLocaleTimeString("ru-RU", { hour12: false });
-}
 
 function statusLabel(status: DeploymentSnapshot["status"]) {
   switch (status) {
@@ -57,7 +50,6 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<DeploymentSnapshot>(EMPTY);
   const [logs, setLogs] = useState<LogEvent[]>([]);
-  const consoleRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const deploying = snapshot.status === "STOPPING" || snapshot.status === "STARTING" || busy;
@@ -84,7 +76,7 @@ export default function App() {
         setSnapshot(payload.snapshot);
       }
       if (payload.type === "log") {
-        setLogs((current) => [...current.slice(-400), payload]);
+        setLogs((current) => [...current.slice(-800), payload]);
       }
     };
     source.onerror = () => {
@@ -93,12 +85,8 @@ export default function App() {
     return () => source.close();
   }, [authed]);
 
-  useEffect(() => {
-    const node = consoleRef.current;
-    if (node) {
-      node.scrollTop = node.scrollHeight;
-    }
-  }, [logs]);
+  const deployLogs = useMemo(() => logs.filter((line) => line.stream === "system"), [logs]);
+  const appLogs = useMemo(() => logs.filter((line) => line.stream === "stdout"), [logs]);
 
   const activeStep = useMemo(() => {
     if (snapshot.status === "FAILED") {
@@ -295,26 +283,21 @@ export default function App() {
           )}
         </form>
 
-        <section className="console-wrap">
-          <div className="console-head">
-            <span>журнал деплоя</span>
-            {snapshot.pid ? <code>pid {snapshot.pid}</code> : <code>ожидание</code>}
-          </div>
-          <div className="console" ref={consoleRef}>
-            {logs.length === 0 ? (
-              <p className="placeholder">Процесс появится здесь: остановка, копирование JAR, вывод приложения.</p>
-            ) : (
-              logs.map((line, index) => (
-                <p key={`${line.ts}-${index}`} className={`line line-${line.stream}`}>
-                  <time>{formatTime(line.ts)}</time>
-                  <b>{line.stream === "system" ? "sys" : "app"}</b>
-                  <span>{line.text}</span>
-                </p>
-              ))
-            )}
-          </div>
-        </section>
+        <LogFrame
+          title="журнал деплоя"
+          badge={snapshot.pid ? `pid ${snapshot.pid}` : "ожидание"}
+          empty="Здесь шаги панели: остановка прошлого JAR, копирование, запуск процесса."
+          lines={deployLogs}
+        />
       </div>
+
+      <LogFrame
+        className="app-logs"
+        title="логи приложения"
+        badge={snapshot.jarName ?? "нет процесса"}
+        empty="Stdout задеплоенного JAR появится здесь после запуска."
+        lines={appLogs}
+      />
     </div>
   );
 }

@@ -338,10 +338,15 @@ button.ghost {
 }
 
 .console-wrap {
-  min-height: 560px;
+  min-height: 360px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.app-logs {
+  margin-top: 18px;
+  min-height: 420px;
 }
 
 .console-head {
@@ -372,9 +377,10 @@ button.ghost {
 
 .line {
   display: grid;
-  grid-template-columns: 74px 36px 1fr;
+  grid-template-columns: 74px 1fr;
   gap: 10px;
   margin: 0 0 6px;
+  word-break: break-word;
 }
 
 .line time,
@@ -398,6 +404,10 @@ button.ghost {
   }
 
   .console-wrap {
-    min-height: 380px;
+    min-height: 280px;
+  }
+
+  .app-logs {
+    min-height: 320px;
   }
 }
