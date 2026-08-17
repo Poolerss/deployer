@@ -53,8 +53,65 @@ h1 {
 
 .tagline {
   max-width: 560px;
-  margin: 14px 0 28px;
+  margin: 14px 0 22px;
   color: var(--muted);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.metrics article {
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  background: rgba(16, 19, 26, 0.88);
+  display: grid;
+  gap: 4px;
+}
+
+.metrics small {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.metrics strong {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.metrics span {
+  color: var(--muted);
+  font-size: 12px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.meter {
+  display: block;
+  height: 4px;
+  margin-top: 8px;
+  background: #1c2230;
+  overflow: hidden;
+}
+
+.meter b {
+  display: block;
+  height: 100%;
+  background: var(--orange);
+  transition: width 0.4s ease;
+}
+
+.meter-ram b {
+  background: var(--mint);
+}
+
+.meter-net b {
+  background: var(--amber);
 }
 
 .led {
@@ -310,7 +367,8 @@ button.ghost {
 }
 
 @media (max-width: 860px) {
-  .layout {
+  .layout,
+  .metrics {
     grid-template-columns: 1fr;
   }
 

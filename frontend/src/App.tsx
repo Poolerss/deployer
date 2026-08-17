@@ -9,6 +9,7 @@ import {
   stopDeploy,
 } from "./api";
 import Login from "./Login";
+import MetricsBar from "./MetricsBar";
 import "./App.css";
 
 const EMPTY: DeploymentSnapshot = {
@@ -207,6 +208,8 @@ export default function App() {
       <p className="tagline">
         Один живой процесс. Следующий JAR останавливает предыдущий и удаляет его с диска.
       </p>
+
+      <MetricsBar onAuthLost={() => setAuthed(false)} />
 
       <div className="layout">
         <form className="panel" onSubmit={onSubmit}>

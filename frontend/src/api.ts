@@ -19,6 +19,17 @@ export type LogEvent = {
   snapshot: DeploymentSnapshot | null;
 };
 
+export type ServerMetrics = {
+  cpuPercent: number;
+  loadAverage: number;
+  cores: number;
+  memoryUsedBytes: number;
+  memoryTotalBytes: number;
+  memoryPercent: number;
+  netRxBytesPerSec: number;
+  netTxBytesPerSec: number;
+};
+
 export class AuthError extends Error {
   constructor(message = "Требуется вход") {
     super(message);
@@ -60,6 +71,12 @@ export async function logout(): Promise<void> {
 export async function fetchSnapshot(): Promise<DeploymentSnapshot> {
   const response = await fetch("/api/deploy", { credentials: "include" });
   await ensureOk(response, "Не удалось получить статус");
+  return response.json();
+}
+
+export async function fetchMetrics(): Promise<ServerMetrics> {
+  const response = await fetch("/api/metrics", { credentials: "include" });
+  await ensureOk(response, "Не удалось получить метрики");
   return response.json();
 }
 
