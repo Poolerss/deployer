@@ -30,7 +30,6 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: vars.ENABLE_SSH_DEPLOY == 'true'
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -42,6 +41,10 @@ jobs:
           USER: ${{ secrets.VPS_USER }}
           KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
+          if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$KEY" ]; then
+            echo "Add repository secrets VPS_HOST, VPS_USER and VPS_SSH_KEY"
+            exit 1
+          fi
           mkdir -p ~/.ssh
           printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
