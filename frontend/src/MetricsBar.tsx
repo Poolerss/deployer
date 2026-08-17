@@ -97,7 +97,7 @@ export default function MetricsBar({ onAuthLost }: Props) {
         </strong>
         <span>
           {metrics
-            ? `↓ ${formatRate(metrics.netRxBytesPerSec)}  ↑ ${formatRate(metrics.netTxBytesPerSec)}`
+            ? `${metrics.netInterface ? metrics.netInterface + " · " : ""}↓ ${formatRate(metrics.netRxBytesPerSec)}  ↑ ${formatRate(metrics.netTxBytesPerSec)}`
             : "опрос…"}
         </span>
         <i className="meter meter-net">

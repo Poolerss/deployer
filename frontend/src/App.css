@@ -6,6 +6,25 @@
   padding: 36px 24px 64px;
 }
 
+.glass,
+.panel,
+.console-wrap,
+.metrics article,
+.led,
+.drop,
+.field input,
+.launch,
+.idle-note {
+  background: var(--glass-bg);
+  background-image: var(--glass);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 18px 50px rgba(6, 22, 48, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
 .topbar {
   display: flex;
   align-items: flex-start;
@@ -22,7 +41,7 @@
 .topbar-actions .ghost {
   flex: none;
   height: 36px;
-  padding: 0 12px;
+  padding: 0 14px;
   font-size: 12px;
 }
 
@@ -39,7 +58,7 @@
 
 .kicker {
   margin: 0 0 6px;
-  color: var(--orange);
+  color: var(--accent-soft);
   font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -49,6 +68,7 @@ h1 {
   margin: 0;
   font-size: 42px;
   letter-spacing: -0.05em;
+  font-weight: 700;
 }
 
 .tagline {
@@ -66,8 +86,7 @@ h1 {
 
 .metrics article {
   padding: 14px 16px 16px;
-  border: 1px solid var(--line);
-  background: rgba(16, 19, 26, 0.88);
+  border-radius: 22px;
   display: grid;
   gap: 4px;
 }
@@ -93,25 +112,27 @@ h1 {
 
 .meter {
   display: block;
-  height: 4px;
+  height: 5px;
   margin-top: 8px;
-  background: #1c2230;
+  background: rgba(255, 255, 255, 0.12);
   overflow: hidden;
+  border-radius: 999px;
 }
 
 .meter b {
   display: block;
   height: 100%;
-  background: var(--orange);
+  background: linear-gradient(90deg, #64d2ff, #0a84ff);
   transition: width 0.4s ease;
+  border-radius: 999px;
 }
 
 .meter-ram b {
-  background: var(--mint);
+  background: linear-gradient(90deg, #7de2ff, #5ac8fa);
 }
 
 .meter-net b {
-  background: var(--amber);
+  background: linear-gradient(90deg, #a5c8ff, #7dc8ff);
 }
 
 .led {
@@ -119,8 +140,7 @@ h1 {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border: 1px solid var(--line);
-  background: rgba(16, 19, 26, 0.8);
+  border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 11px;
@@ -131,23 +151,23 @@ h1 {
   height: 8px;
   border-radius: 50%;
   background: var(--muted);
-  box-shadow: 0 0 0 4px rgba(139, 147, 167, 0.12);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
 }
 
 .status-running span {
   background: var(--mint);
-  box-shadow: 0 0 0 4px rgba(78, 227, 165, 0.14);
+  box-shadow: 0 0 0 4px rgba(50, 215, 75, 0.18);
 }
 
 .status-starting span,
 .status-stopping span {
-  background: var(--amber);
-  box-shadow: 0 0 0 4px rgba(244, 197, 106, 0.14);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 4px rgba(100, 210, 255, 0.18);
 }
 
 .status-failed span {
   background: var(--rose);
-  box-shadow: 0 0 0 4px rgba(255, 93, 115, 0.14);
+  box-shadow: 0 0 0 4px rgba(255, 107, 129, 0.18);
 }
 
 .layout {
@@ -158,9 +178,7 @@ h1 {
 
 .panel,
 .console-wrap {
-  border: 1px solid var(--line);
-  background: rgba(16, 19, 26, 0.88);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-radius: 24px;
 }
 
 .panel {
@@ -174,10 +192,8 @@ h1 {
   cursor: pointer;
   min-height: 132px;
   padding: 18px;
-  border: 1px dashed #3b4456;
-  background:
-    linear-gradient(180deg, rgba(255, 106, 43, 0.07), transparent 40%),
-    #0c0f15;
+  border-radius: 18px;
+  border-style: dashed;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -204,7 +220,11 @@ h1 {
 
 .drop.is-drag,
 .drop.has-file {
-  border-color: var(--orange);
+  border-color: rgba(100, 210, 255, 0.7);
+  box-shadow:
+    0 18px 50px rgba(6, 22, 48, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 0 0 1px rgba(10, 132, 255, 0.25);
 }
 
 .field {
@@ -215,11 +235,15 @@ h1 {
 
 .field input {
   height: 44px;
-  padding: 0 12px;
+  padding: 0 14px;
   color: var(--text);
-  background: #0c0f15;
-  border: 1px solid #343b4b;
+  border-radius: 14px;
   font: 15px "IBM Plex Mono", ui-monospace, monospace;
+  outline: none;
+}
+
+.field input:focus {
+  border-color: rgba(100, 210, 255, 0.8);
 }
 
 .field em {
@@ -239,7 +263,7 @@ h1 {
 
 .steps li {
   padding: 8px 10px;
-  border-left: 2px solid #343b4b;
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
   color: var(--muted);
   font-size: 13px;
 }
@@ -247,7 +271,7 @@ h1 {
 .steps li.now,
 .steps li.done {
   color: var(--text);
-  border-left-color: var(--orange);
+  border-left-color: var(--accent-soft);
 }
 
 .actions {
@@ -260,10 +284,12 @@ button {
   height: 46px;
   border: 0;
   cursor: pointer;
-  background: var(--orange);
-  color: #140b07;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #64b8ff 0%, #0a84ff 100%);
+  color: #fff;
   font-weight: 700;
   letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(10, 132, 255, 0.32);
 }
 
 button:disabled {
@@ -273,9 +299,10 @@ button:disabled {
 
 button.ghost {
   flex: 0.8;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
-  border: 1px solid #343b4b;
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .error {
@@ -290,13 +317,13 @@ button.ghost {
   padding: 14px;
   text-decoration: none;
   color: inherit;
-  background: linear-gradient(90deg, rgba(78, 227, 165, 0.16), rgba(78, 227, 165, 0.04));
-  border: 1px solid rgba(78, 227, 165, 0.35);
+  border-radius: 18px;
+  border-color: rgba(100, 210, 255, 0.45);
 }
 
 .launch span,
 .launch em {
-  color: var(--mint);
+  color: var(--accent-soft);
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -307,21 +334,22 @@ button.ghost {
   color: var(--muted);
   font-size: 13px;
   padding: 12px;
-  background: #0c0f15;
+  border-radius: 16px;
 }
 
 .console-wrap {
   min-height: 560px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .console-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--line);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .console-head code {
@@ -333,12 +361,9 @@ button.ghost {
 .console {
   flex: 1;
   overflow: auto;
-  padding: 12px 14px 18px;
+  padding: 12px 16px 18px;
   font: 12.5px/1.55 "IBM Plex Mono", ui-monospace, monospace;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    #090b10;
-  background-size: 100% 24px;
+  background: rgba(6, 16, 32, 0.28);
 }
 
 .placeholder {
@@ -354,16 +379,16 @@ button.ghost {
 
 .line time,
 .line b {
-  color: #667085;
+  color: rgba(180, 205, 235, 0.62);
   font-weight: 500;
 }
 
 .line-system span {
-  color: #f3c27b;
+  color: #9ad8ff;
 }
 
 .line-stdout span {
-  color: #d5deea;
+  color: #e8f2ff;
 }
 
 @media (max-width: 860px) {

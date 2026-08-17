@@ -8,6 +8,7 @@ public record ServerMetrics(
 		long memoryTotalBytes,
 		double memoryPercent,
 		double netRxBytesPerSec,
-		double netTxBytesPerSec
+		double netTxBytesPerSec,
+		String netInterface
 ) {
 }

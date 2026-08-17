@@ -28,6 +28,7 @@ export type ServerMetrics = {
   memoryPercent: number;
   netRxBytesPerSec: number;
   netTxBytesPerSec: number;
+  netInterface: string | null;
 };
 
 export class AuthError extends Error {
