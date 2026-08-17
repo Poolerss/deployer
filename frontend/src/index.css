@@ -1,0 +1,44 @@
+:root {
+  color-scheme: dark;
+  --bg: #08090d;
+  --panel: #10131a;
+  --line: #2a3140;
+  --text: #e7edf6;
+  --muted: #8b93a7;
+  --orange: #ff6a2b;
+  --mint: #4ee3a5;
+  --rose: #ff5d73;
+  --amber: #f4c56a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: Manrope, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(255, 106, 43, 0.16), transparent 55%),
+    radial-gradient(900px 400px at 100% 0%, rgba(78, 227, 165, 0.08), transparent 50%),
+    var(--bg);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 90%);
+}

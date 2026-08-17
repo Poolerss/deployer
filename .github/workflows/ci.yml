@@ -1,0 +1,50 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Package
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -DskipTests package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deployer-jar
+          path: target/deployer-1.0.0.jar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: vars.ENABLE_SSH_DEPLOY == 'true'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: deployer-jar
+
+      - name: Copy jar and restart service
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+          USER: ${{ secrets.VPS_USER }}
+          KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+          scp -o StrictHostKeyChecking=yes deployer-1.0.0.jar "$USER@$HOST:/tmp/deployer.jar"
+          ssh -o StrictHostKeyChecking=yes "$USER@$HOST" 'sudo mv /tmp/deployer.jar /opt/deployer/deployer.jar && sudo chown deployer:deployer /opt/deployer/deployer.jar && sudo systemctl restart deployer'
